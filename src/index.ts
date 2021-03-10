@@ -13,23 +13,23 @@ import * as piping from "./piping";
 const parser = yargs
   .option("http-port", {
     describe: "Port of HTTP server",
-    default: 8080
+    default: 8080,
   })
   .option("enable-https", {
     describe: "Enable HTTPS",
-    default: false
+    default: false,
   })
   .option("https-port", {
     describe: "Port of HTTPS server",
-    type: "number"
+    type: "number",
   })
   .option("key-path", {
     describe: "Private key path",
-    type: "string"
+    type: "string",
   })
   .option("crt-path", {
     describe: "Certification path",
-    type: "string"
+    type: "string",
   });
 
 // Parse arguments
@@ -47,25 +47,26 @@ logger.level = "info";
 // Create a piping server
 const pipingServer = new piping.Server({ logger });
 
-http.createServer(pipingServer.generateHandler(false))
-  .listen(httpPort, () => {
-    logger.info(`Listen HTTP on ${httpPort}...`);
-  });
+http.createServer(pipingServer.generateHandler(false)).listen(httpPort, () => {
+  logger.info(`Listen HTTP on ${httpPort}...`);
+});
 
 if (enableHttps && httpsPort !== undefined) {
   if (serverKeyPath === undefined || serverCrtPath === undefined) {
     logger.error("Error: --key-path and --crt-path should be specified");
   } else {
-    http2.createSecureServer(
-      {
-        key: fs.readFileSync(serverKeyPath),
-        cert: fs.readFileSync(serverCrtPath),
-        allowHTTP1: true
-      },
-      pipingServer.generateHandler(true)
-    ).listen(httpsPort, () => {
-      logger.info(`Listen HTTPS on ${httpsPort}...`);
-    });
+    http2
+      .createSecureServer(
+        {
+          key: fs.readFileSync(serverKeyPath),
+          cert: fs.readFileSync(serverCrtPath),
+          allowHTTP1: true,
+        },
+        pipingServer.generateHandler(true)
+      )
+      .listen(httpsPort, () => {
+        logger.info(`Listen HTTPS on ${httpsPort}...`);
+      });
   }
 }
 
